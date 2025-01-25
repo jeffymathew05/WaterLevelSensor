@@ -1,10 +1,9 @@
 #include <SPI.h>
 #include <LoRa.h>
 
-#define FLOAT_SENSOR1  1                          // the number of the float switch1 pin
-#define FLOAT_SENSOR2  2                          // the number of the float switch2 pin
+char data;
+int value;
 void setup() {
-
   Serial.begin(9600);
   while (!Serial);                                // Waits for the serial port to be ready
 
@@ -12,25 +11,30 @@ void setup() {
     Serial.println("Starting LoRa failed!");      // If fails to initialize the LoRa module, the message "Starting LoRa failed!" is printed to the Serial Monitor
     while (1);                                    // the program halts to an infinite loop if the initializing is failed
   }
-
-  pinMode(FLOAT_SENSOR1, INPUT_PULLUP);           // initialize the first float switch pin as an input:
-  pinMode(FLOAT_SENSOR2, INPUT_PULLUP);           // initialize the second float switch2 pin as an input:
 }
-
 void loop() {
  
   int packetSize = LoRa.parsePacket();            // try to parse packet
   if (packetSize) {
     
-    Serial.print("Received packet '");            // received a packet
+    Serial.print("Received packet ");            // received a packet
 
-    
-    while (LoRa.available()) {                    // read packet
-      Serial.print((char)LoRa.read());
+    while (LoRa.available()) {  
+      data = (char)LoRa.read();
+      Serial.print(data);
+      if (data>='0' && data <='z'){             // Eliminating the '\0' form the char
+        value=data-'0';
+      }
     }
-    if()                                          //ADDITIONAL DATA IS REQUIRED TO COMPLETE THE CODE 
-    
-    Serial.print("' with RSSI ");                 // print RSSI of packet
+    Serial.println(value);
+    if(value==1){                               // Condition for motor to be ON or OFF
+      Serial.println("Motor is turned on");
+    }                                         
+    else{
+      Serial.println("Motor is turned off");
+    }  
+    Serial.print(" with RSSI ");                 // print RSSI of packet
     Serial.println(LoRa.packetRssi());
-  
+    delay(3000);
+  }
 }
